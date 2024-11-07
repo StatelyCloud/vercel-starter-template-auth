@@ -3,15 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { statelyClient } from "./stately";
 import { keyPath } from "@stately-cloud/client";
+import { get } from "http";
+import { auth } from "@/auth";
+import crypto from 'crypto';
 
 /**
  * Fetches all GoLinks from StatelyDB.
  * @returns An array of all GoLinks, sorted by creation date.
  */
 export async function fetchLinks() {
-  // Note: In a real app with authentication we would be supplying the identity
-  // of the current user here, rather than hardcoding "everybody".
-  const prefix = keyPath`/users-everybody/l`;
+  const userHash = await getUserIdentity();
+  const prefix = keyPath`/users-${userHash}/l`;
   const links = [];
   const iter = statelyClient.beginList(prefix, { limit: 100 });
   for await (const item of iter) {
@@ -31,13 +33,14 @@ export async function fetchLinks() {
  * @param formData The form data containing the short name and URL of the new GoLink.
  */
 export async function createLink(formData: FormData) {
+  const userHash = await getUserIdentity();
   const short = formData.get("short") as string;
   const url = formData.get("url") as string;
   const link = await statelyClient.put(
     statelyClient.create("GoLink", {
       short,
       url,
-      owner: "everybody",
+      owner: userHash,
     })
   );
   revalidatePath("/");
@@ -49,5 +52,15 @@ export async function createLink(formData: FormData) {
  * @returns The GoLink with the given short name, or undefined if not found.
  */
 export async function getLink(short: any) {
-  return statelyClient.get("GoLink", keyPath`/users-everybody/s-${short}`);
+  const userHash = await getUserIdentity();
+  return statelyClient.get("GoLink", keyPath`/users-${userHash}/s-${short}`);
+}
+
+
+/**
+ * Retrieves the user identity as a hash for inclusion in the StatelyDB key path.
+ */
+export async function getUserIdentity() {
+  const session = await auth();
+  return crypto.createHash('sha256').update(session?.user?.email || "unknown").digest('hex');
 }

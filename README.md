@@ -1,8 +1,10 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FStatelyCloud%2Fvercel-starter-template&env=STATELY_STORE_ID,STATELY_CLIENT_SECRET,STATELY_CLIENT_SECRET&envDescription=API%20keys%20and%20Store%20configuration.&envLink=https%3A%2F%2Fdocs.stately.cloud%2Fguides%2Fconnect%2F&skippable-integrations=1)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FStatelyCloud%2Fvercel-starter-template&env=STATELY_STORE_ID,STATELY_CLIENT_SECRET,STATELY_CLIENT_SECRET,NEXTAUTH_URL,AUTH_SECRET,AUTH_GOOGLE_ID,AUTH_GOOGLE_SECRET&envDescription=API%20keys%20and%20Store%20configuration.&envLink=https%3A%2F%2Fdocs.stately.cloud%2Fguides%2Fconnect%2F&skippable-integrations=1)
 
 # Vercel GoLinks
 
 This is a sample NextJS webapp that uses StatelyDB.
+
+*NOTE:* You MUST set up your StatelyDB store and schema following the instructions below before deploying to Vercel!
 
 ## Features
 
@@ -10,16 +12,13 @@ This is a sample NextJS webapp that uses StatelyDB.
 - Create and manage go-links (short string to URL associations)
 - Redirect to the associated URL when visiting a go-link path
 - Display a list of all go-links, ordered by most recently created
+- Uses Google OAuth to authenticate users. Each `GoLink` Item in the StatelyDB store belongs to a user.
 
 ## Prerequisites
 
 - Node.js 14.x or later
 - Vercel account
 - Stately Cloud account and access to a StatelyDB Store
-
-## What Isn't Included
-
-- This sample app doesn't include any auth and assumes a single user.
 
 ## Setup
 
@@ -28,13 +27,25 @@ This is a sample NextJS webapp that uses StatelyDB.
    ```
    npm install
    ```
-3. For local development, create a `.env.local` file in the root directory with the following content:
+3. Follow the instructions below under _StatelyDB Schema Setup_ to configure your StatelyDB Store and associated schema.
+4. This project uses [NextAuth.js](https://next-auth.js.org/) for authentication. You will need to [configure Google OAuth credentials](https://next-auth.js.org/providers/google).
+5. You will need to generate a secret value for the [`AUTH_SECRET`](https://next-auth.js.org/configuration/options#nextauth_secret) value:
+   ```
+   npx auth secret
+   ```
+6. For local development, create a `.env.local` file in the root directory with the following content:
    ```
    STATELY_CLIENT_ID=your_client_id
    STATELY_CLIENT_SECRET=your_client_secret
    STATELY_STORE_ID=12345
+   NEXTAUTH_URL=your_base_url
+   AUTH_GOOGLE_ID=your_google_oauth_id
+   AUTH_GOOGLE_SECRET=your_google_oauth_secret
+   AUTH_SECRET=your_auth_secret
    ```
-   Replace `your_client_id`, `your_client_secret`, and `12345` with your actual StatelyDB credentials and store ID.
+   Replace `your_client_id`, `your_client_secret`, and `12345` with your actual StatelyDB credentials and store ID.  Replace `your_base_url` with the base url of your app (e.g. `http://localhost:3000` or `https://myapp.vercel.app`).
+   
+   See `.env.local.example` for more details on the other configuration options.
 
 ## StatelyDB Schema Setup
 
@@ -92,9 +103,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the a
    vercel
    ```
 4. Follow the prompts to configure your project
-5. Set up environment variables in the Vercel dashboard:
-   - STATELY_CLIENT_ID
-   - STATELY_CLIENT_SECRET
-   - STATELY_STORE_ID
+5. Set up environment variables in the Vercel dashboard
 
 Your application is now deployed and ready to use!
