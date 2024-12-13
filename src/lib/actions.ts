@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { statelyClient } from "./stately";
+import {GoLink} from "./generated/index";
 import { keyPath } from "@stately-cloud/client";
-import { get } from "http";
 import { auth } from "@/auth";
 import crypto from 'crypto';
 
@@ -43,6 +43,7 @@ export async function createLink(formData: FormData) {
       owner: userHash,
     })
   );
+  console.log("Created link:", link); 
   revalidatePath("/");
 }
 
@@ -51,7 +52,7 @@ export async function createLink(formData: FormData) {
  * @param short The short name of the GoLink to retrieve.
  * @returns The GoLink with the given short name, or undefined if not found.
  */
-export async function getLink(short: any) {
+export async function getLink(short: string): Promise<GoLink | undefined> {
   const userHash = await getUserIdentity();
   return statelyClient.get("GoLink", keyPath`/users-${userHash}/s-${short}`);
 }
