@@ -43,7 +43,7 @@ export async function createLink(formData: FormData) {
       owner: userHash,
     })
   );
-  console.log("Created link:", link); 
+  console.log("Created link:", link);
   revalidatePath("/");
 }
 
